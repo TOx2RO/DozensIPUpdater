@@ -44,7 +44,19 @@ class MyIPAddress {
 
     /** 現在のIPアドレスを取得 */
     function __construct() {
-        $this->ip = trim(file_get_contents('http://ifconfig.me/ip'));
+        $fp = fsockopen('ddnsclient.onamae.com', 65000, $errno, $errstr, 10);
+        $query = "GET / HTTP/1.0\r\n";
+        $query .= "Connection: Close\r\n\r\n";
+        fwrite($fp, $query);
+        $result = '';
+        while (!feof($fp)) {
+            $result .= fgets($fp);
+        }
+        fclose($fp);
+
+        preg_match('/^IPV4: (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/', $result, $match);
+
+        $this->ip = $match[1];
     }
 
     /**
